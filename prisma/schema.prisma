@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String              @id @default(uuid())
+  clerkUserId         String              @unique
+  email               String              @unique
+  name                String?
+  imageUrl            String?
+  role                UserRole            @default(UNASSIGNED)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  credits             Int                 @default(2)
+  specialty           String?
+  experience          Int?
+  credentialUrl       String?
+  description         String?
+  verificationStatus  VerificationStatus? @default(PENDING)
+  advisorAppointments Appointment[]       @relation("AdvisorAppointments")
+  founderAppointments Appointment[]       @relation("FounderAppointments")
+  availabilities      Availability[]
+  transactions        CreditTransaction[]
+  payouts             Payout[]
+}
+
+model Availability {
+  id        String     @id @default(uuid())
+  advisorId String
+  startTime DateTime
+  endTime   DateTime
+  status    SlotStatus @default(AVAILABLE)
+  advisor   User       @relation(fields: [advisorId], references: [id], onDelete: Cascade)
+
+  @@index([advisorId, startTime])
+}
+
+model Appointment {
+  id                 String            @id @default(uuid())
+  founderId          String
+  advisorId          String
+  startTime          DateTime
+  endTime            DateTime
+  status             AppointmentStatus @default(SCHEDULED)
+  notes              String?
+  founderDescription String?
+  videoSessionId     String?
+  videoSessionToken  String?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  advisor            User              @relation("AdvisorAppointments", fields: [advisorId], references: [id])
+  founder            User              @relation("FounderAppointments", fields: [founderId], references: [id])
+
+  @@index([status, startTime])
+  @@index([advisorId, startTime])
+}
+
+model CreditTransaction {
+  id        String          @id @default(uuid())
+  userId    String
+  amount    Int
+  type      TransactionType
+  packageId String?
+  createdAt DateTime        @default(now())
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Payout {
+  id          String       @id @default(uuid())
+  advisorId   String
+  amount      Float
+  credits     Int
+  platformFee Float
+  netAmount   Float
+  paypalEmail String
+  status      PayoutStatus @default(PROCESSING)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  processedAt DateTime?
+  processedBy String?
+  advisor     User         @relation(fields: [advisorId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+  @@index([advisorId, status])
+}
+
+enum UserRole {
+  UNASSIGNED
+  FOUNDER
+  ADVISOR
+  ADMIN
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum SlotStatus {
+  AVAILABLE
+  BOOKED
+  BLOCKED
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+enum TransactionType {
+  CREDIT_PURCHASE
+  APPOINTMENT_DEDUCTION
+  ADMIN_ADJUSTMENT
+}
+
+enum PayoutStatus {
+  PROCESSING
+  PROCESSED
+}
