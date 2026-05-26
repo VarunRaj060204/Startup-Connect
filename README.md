@@ -1,6 +1,6 @@
-# 🚀 Startup Advisory
+# 🚀 Startup Connect
 
-**Startup Advisory** is a full-stack web platform that connects startup founders with expert advisors for one-on-one consultations. It supports role-based access for Founders, Advisors, and Admins, with robust features for appointment booking, subscription plans, video calls, and earnings management.
+**Startup Connect** is a full-stack web platform that connects startup founders with expert advisors for one-on-one consultations. It supports role-based access for Founders, Advisors, and Admins, with robust features for appointment booking, subscription plans, video calls, and earnings management.
 
 ---
 
